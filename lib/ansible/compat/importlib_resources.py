@@ -5,7 +5,10 @@ from __future__ import annotations
 
 from ansible.utils.display import Display as _Display
 
-from importlib.resources import files  # pylint: disable=unused-import
+try:
+    from importlib.resources import files  # pylint: disable=unused-import
+except ImportError:
+    from importlib_resources import files  # pylint: disable=unused-import
 
 HAS_IMPORTLIB_RESOURCES = True
 
