@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sqlite3
 import sys
 
@@ -193,31 +194,33 @@ def populate_integration_targets():
     ))
 
 
-def validate_sql_identifier(identifier):
-    """Validate that a SQL identifier (table/column name) contains only safe characters."""
-    import re
-    if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', identifier):
-        raise ValueError("Invalid SQL identifier: %r" % identifier)
+_SAFE_IDENTIFIER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def _safe_identifier(name):
+    """Validate that a SQL identifier contains only safe characters to prevent SQL injection."""
+    if not _SAFE_IDENTIFIER_RE.match(name):
+        raise ValueError("Unsafe SQL identifier rejected: %r" % name)
+    return name
 
 
 def create_table(cursor, name, columns):
-    validate_sql_identifier(name)
-    for col_name, col_type in columns:
-        validate_sql_identifier(col_name)
+    safe_name = _safe_identifier(name)
+    safe_columns = [(_safe_identifier(col), col_type) for col, col_type in columns]
+    schema = ', '.join('%s %s' % column for column in safe_columns)
 
-    schema = ', '.join('%s %s' % column for column in columns)
-
-    cursor.execute('DROP TABLE IF EXISTS %s' % name)
-    cursor.execute('CREATE TABLE %s (%s)' % (name, schema))
+    cursor.execute('DROP TABLE IF EXISTS %s' % safe_name)
+    cursor.execute('CREATE TABLE %s (%s)' % (safe_name, schema))
 
 
 def populate_table(cursor, rows, name, columns):
     create_table(cursor, name, columns)
 
-    values = ', '.join([':%s' % column[0] for column in columns])
+    safe_name = _safe_identifier(name)
+    values = ', '.join([':%s' % _safe_identifier(column[0]) for column in columns])
 
     for row in rows:
-        cursor.execute('INSERT INTO %s VALUES (%s)' % (name, values), row)
+        cursor.execute('INSERT INTO %s VALUES (%s)' % (safe_name, values), row)
 
 
 def populate_data(data):
