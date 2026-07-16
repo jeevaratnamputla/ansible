@@ -43,8 +43,8 @@ from ansible.module_utils.common.json import _get_legacy_encoder
 
 
 def write_to_stream(stream, obj):
-    """Write a length+newline-prefixed pickled object to a stream."""
-    src = pickle.dumps(obj)
+    """Write a length+newline-prefixed JSON-encoded object to a stream."""
+    src = json.dumps(obj).encode()
 
     stream.write(b'%d\n' % len(src))
     stream.write(src)
