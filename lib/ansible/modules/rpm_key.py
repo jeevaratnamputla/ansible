@@ -310,8 +310,8 @@ class LibRPM:
         for i in range(body_len):
             fp_data.append(pkt[body_offset + i])
 
-        # Compute SHA-1 hash
-        return hashlib.sha1(fp_data).hexdigest().upper()
+        # Compute SHA-1 hash (mandated by RFC 4880 Section 12.2 for V4 key fingerprints; not used for security)
+        return hashlib.new('sha1', fp_data, usedforsecurity=False).hexdigest().upper()
 
     def _compute_v6_fingerprint(self, pkt: PktPointer, offset: int, pktlen: int) -> str | None:
         """
