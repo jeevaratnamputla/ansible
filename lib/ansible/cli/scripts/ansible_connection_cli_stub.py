@@ -5,7 +5,6 @@ from __future__ import annotations
 import fcntl
 import io
 import os
-import pickle
 import signal
 import socket
 import sys
@@ -235,12 +234,12 @@ def main(args=None):
     sys.stdout = io.StringIO()
 
     try:
-        # read the play context data via stdin, which means depickling it
+        # read the play context data via stdin, which means deserializing it
         opts_data = read_stream(stdin)
         init_data = read_stream(stdin)
 
-        pc_data = pickle.loads(init_data, encoding='bytes')
-        options = pickle.loads(opts_data, encoding='bytes')
+        pc_data = json.loads(init_data)
+        options = json.loads(opts_data)
 
         play_context = PlayContext()
         play_context.from_attrs(pc_data)
