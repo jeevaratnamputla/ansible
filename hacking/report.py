@@ -193,7 +193,18 @@ def populate_integration_targets():
     ))
 
 
+def validate_sql_identifier(identifier):
+    """Validate that a SQL identifier (table/column name) contains only safe characters."""
+    import re
+    if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', identifier):
+        raise ValueError("Invalid SQL identifier: %r" % identifier)
+
+
 def create_table(cursor, name, columns):
+    validate_sql_identifier(name)
+    for col_name, col_type in columns:
+        validate_sql_identifier(col_name)
+
     schema = ', '.join('%s %s' % column for column in columns)
 
     cursor.execute('DROP TABLE IF EXISTS %s' % name)
