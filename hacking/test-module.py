@@ -33,6 +33,7 @@ from __future__ import annotations
 import glob
 import optparse
 import os
+import shlex
 import subprocess
 import sys
 import traceback
@@ -248,7 +249,7 @@ def runtest(modfile, argspath, modname, module_style, interpreters):
     if argspath is not None:
         invoke = "%s %s" % (invoke, argspath)
 
-    cmd = subprocess.Popen(invoke, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = subprocess.Popen(shlex.split(invoke), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = cmd.communicate()
     out, err = to_text(out), to_text(err)
 

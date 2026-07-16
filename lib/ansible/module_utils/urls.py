@@ -472,12 +472,6 @@ class HTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
 
 def make_context(cafile=None, cadata=None, capath=None, ciphers=None, validate_certs=True, client_cert=None,
                  client_key=None):
-    if ciphers is None:
-        ciphers = []
-
-    if not is_sequence(ciphers):
-        raise TypeError('Ciphers must be a list. Got %s.' % ciphers.__class__.__name__)
-
     context = ssl.create_default_context(cafile=cafile)
 
     if not validate_certs:
@@ -493,9 +487,6 @@ def make_context(cafile=None, cadata=None, capath=None, ciphers=None, validate_c
         cadata.extend(get_ca_certs(capath=capath)[0])
         if cadata:
             context.load_verify_locations(cadata=cadata)
-
-    if ciphers:
-        context.set_ciphers(':'.join(map(to_native, ciphers)))
 
     if client_cert:
         # TLS 1.3 needs this to be set to True to allow post handshake cert

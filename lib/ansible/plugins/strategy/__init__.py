@@ -1121,7 +1121,8 @@ class Debugger(cmd.Cmd):
 
     def evaluate(self, args):
         try:
-            return eval(args, globals(), self.scope)
+            code = compile(args, '<stdin>', 'eval')
+            return eval(code, globals(), self.scope)
         except Exception:
             t, v = sys.exc_info()[:2]
             if isinstance(t, str):

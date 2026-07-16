@@ -50,9 +50,17 @@ class _AnsibleVaultEncryptedUnicode:
         return _datatag.AnsibleTagHelper.tag_copy(ciphertext, encrypted_string)
 
 
+_ANSIBLE_COMPAT_NAMES: dict[str, _t.Any] = {
+    'AnsibleMapping': _AnsibleMapping,
+    'AnsibleUnicode': _AnsibleUnicode,
+    'AnsibleSequence': _AnsibleSequence,
+    'AnsibleVaultEncryptedUnicode': _AnsibleVaultEncryptedUnicode,
+}
+
+
 def __getattr__(name: str) -> _t.Any:
     """Inject import-time deprecation warnings."""
-    if (value := globals().get(f'_{name}', None)) and name.startswith('Ansible'):
+    if (value := _ANSIBLE_COMPAT_NAMES.get(name)) is not None:
         # deprecated: description='enable deprecation of everything in this module', core_version='2.23'
         # from ansible.utils.display import Display
         #
