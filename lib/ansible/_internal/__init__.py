@@ -22,11 +22,22 @@ def get_controller_serialize_map() -> dict[type, t.Callable]:
     }
 
 
+_ALLOWED_CONTROLLER_MODULES: frozenset[str] = frozenset({
+    'ansible.constants',
+    'ansible.errors',
+    'ansible._internal._json._legacy_encoder',
+    'ansible.utils.display',
+})
+
+
 def import_controller_module(module_name: str, /) -> t.Any:
     """
     Injected into module_utils code to import and return the specified module.
     This implementation replaces the no-op version in module_utils._internal in controller contexts.
+    Only modules explicitly listed in _ALLOWED_CONTROLLER_MODULES may be imported.
     """
+    if module_name not in _ALLOWED_CONTROLLER_MODULES:
+        raise ValueError(f"import_controller_module: '{module_name}' is not an allowed module name.")
     return importlib.import_module(module_name)
 
 
