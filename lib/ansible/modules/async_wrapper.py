@@ -156,7 +156,6 @@ def _run_module(jid, *module_args):
             shell=False,
             text=True,
             encoding="utf-8",
-            errors="surrogateescape",
         )
 
         (outdata, stderr) = script.communicate()
