@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import glob
 import os
-import pickle
+import json
 import platform
 import select
 import shlex
@@ -216,9 +216,9 @@ def daemonize(module, cmd):
         # even after fds close, we might want to wait for pid to die
         p.wait()
 
-        # Return a pickled data of parent
-        return_data = pickle.dumps([p.returncode, to_text(output[p.stdout]), to_text(output[p.stderr])], protocol=pickle.HIGHEST_PROTOCOL)
-        os.write(pipe[1], to_bytes(return_data, errors=errors))
+        # Return JSON-encoded data to parent
+        return_data = json.dumps([p.returncode, to_text(output[p.stdout]), to_text(output[p.stderr])]).encode()
+        os.write(pipe[1], return_data)
 
         # clean up
         os.close(pipe[1])
@@ -242,7 +242,7 @@ def daemonize(module, cmd):
                     break
                 return_data += to_bytes(data, errors=errors)
 
-        return pickle.loads(to_bytes(return_data, errors=errors))
+        return json.loads(return_data)
 
 
 def check_ps(module, pattern):
