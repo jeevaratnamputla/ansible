@@ -1154,39 +1154,34 @@ class _CachedModule:
     """A mapping of controller absolute source locations to target relative source locations within the AnsiballZ payload."""
 
     def dump(self, path: str) -> None:
-        if not isinstance(self.metadata, ModuleMetadataV1):
-            raise NotImplementedError(type(self.metadata))
-
+        # Determine the metadata version key for round-trip reconstruction.
+        metadata_version = next(
+            (v for v, cls in metadata_versions.items() if type(self.metadata) is cls),
+            None,
+        )
         payload = {
-            'metadata_version': 1,
-            'metadata': dataclasses.asdict(self.metadata),
             'zip_data': base64.b64encode(self.zip_data).decode('ascii'),
+            'metadata': {
+                'version': metadata_version,
+                'fields': dataclasses.asdict(self.metadata),
+            },
             'source_mapping': self.source_mapping,
         }
-
         temp_path = pathlib.Path(path + '-part')
-
         with temp_path.open('w', encoding='utf-8') as cache_file:
             json.dump(payload, cache_file)
-
         temp_path.rename(path)
 
     @classmethod
     def load(cls, path: str) -> t.Self:
         with pathlib.Path(path).open('r', encoding='utf-8') as cache_file:
             payload = json.load(cache_file)
-
-        metadata_version = payload['metadata_version']
-        metadata_cls = metadata_versions.get(metadata_version)
-
-        if metadata_cls is None:
-            raise NotImplementedError(f'Unknown metadata version: {metadata_version!r}')
-
-        return cls(
-            zip_data=base64.b64decode(payload['zip_data']),
-            metadata=metadata_cls(**payload['metadata']),
-            source_mapping=payload['source_mapping'],
-        )
+        zip_data = base64.b64decode(payload['zip_data'])
+        meta_block = payload['metadata']
+        meta_cls = metadata_versions[meta_block['version']]
+        metadata = meta_cls(**meta_block['fields'])
+        source_mapping: dict[str, str] = payload['source_mapping']
+        return cls(zip_data=zip_data, metadata=metadata, source_mapping=source_mapping)
 
 
 def _find_module_utils(
