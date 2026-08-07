@@ -584,6 +584,23 @@ class DarwinStrategy(BaseStrategy):
             self.changed = True
 
 
+# Explicit mapping from STRATS value fragments to their strategy classes.
+# This replaces a dynamic globals() lookup, eliminating the associated
+# security risk of using non-static data as a globals() index.
+STRAT_CLASSES = {
+    'Alpine': AlpineStrategy,
+    'Base': BaseStrategy,
+    'Darwin': DarwinStrategy,
+    'FreeBSD': FreeBSDStrategy,
+    'OpenBSD': OpenBSDStrategy,
+    'OpenRC': OpenRCStrategy,
+    'RedHat': RedHatStrategy,
+    'SLES': SLESStrategy,
+    'Solaris': SolarisStrategy,
+    'Systemd': SystemdStrategy,
+}
+
+
 class Hostname(object):
     """
     This is a generic Hostname manipulation class that is subclassed
@@ -608,7 +625,7 @@ class Hostname(object):
         self.use = module.params['use']
 
         if self.use is not None:
-            strategy = globals()['%sStrategy' % STRATS[self.use]]
+            strategy = STRAT_CLASSES[STRATS[self.use]]
             self.strategy = strategy(module)
         elif platform.system() == 'Linux' and ServiceMgrFactCollector.is_systemd_managed(module):
             # This is Linux and systemd is active
