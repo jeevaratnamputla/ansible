@@ -278,9 +278,9 @@ def rundebug(debugger, modfile, argspath, modname, module_style, interpreters):
         modfile, argspath = ansiballz_setup(modfile, modname, interpreters)
 
     if argspath is not None:
-        subprocess.call("%s %s %s" % (debugger, modfile, argspath), shell=True)
+        subprocess.call([debugger, modfile, argspath], shell=False)
     else:
-        subprocess.call("%s %s" % (debugger, modfile), shell=True)
+        subprocess.call([debugger, modfile], shell=False)
 
 
 def main():
