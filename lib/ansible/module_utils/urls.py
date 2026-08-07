@@ -863,6 +863,17 @@ class Request:
         opener = urllib.request.build_opener(*handlers)
         urllib.request.install_opener(opener)
 
+        # Validate URL scheme to prevent exploitation of urllib's file:// support,
+        # which could allow reading arbitrary local files via a malicious URL.
+        parsed_url = urlparse(url)
+        allowed_schemes = {'http', 'https', 'ftp'}
+        if parsed_url.scheme.lower() not in allowed_schemes:
+            raise ValueError(
+                "Unsupported URL scheme '%s': only %s are allowed" % (
+                    parsed_url.scheme, ', '.join(sorted(allowed_schemes))
+                )
+            )
+
         data = to_bytes(data, nonstring='passthru')
         request = urllib.request.Request(url, data=data, method=method.upper())
 
