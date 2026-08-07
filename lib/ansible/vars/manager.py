@@ -286,10 +286,20 @@ class VariableManager:
 
             # Merge groups as per precedence config
             # only allow to call the functions we want exposed
+            # Explicit dispatch map replaces locals()[entry]() to avoid dangerous dynamic namespace lookups
+            _allowed_functions = {
+                'all_inventory': all_inventory,
+                'all_plugins_inventory': all_plugins_inventory,
+                'all_plugins_play': all_plugins_play,
+                'groups_inventory': groups_inventory,
+                'groups_plugins_inventory': groups_plugins_inventory,
+                'groups_plugins_play': groups_plugins_play,
+                'plugins_by_groups': plugins_by_groups,
+            }
             for entry in C.VARIABLE_PRECEDENCE:
                 if entry in self._ALLOWED:
                     display.debug('Calling %s to load vars for %s' % (entry, host.name))
-                    all_vars = _combine_and_track(all_vars, locals()[entry](), "group vars, precedence entry '%s'" % entry)
+                    all_vars = _combine_and_track(all_vars, _allowed_functions[entry](), "group vars, precedence entry '%s'" % entry)
                 else:
                     display.warning('Ignoring unknown variable precedence entry: %s' % (entry))
 
