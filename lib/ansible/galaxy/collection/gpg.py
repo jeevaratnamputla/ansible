@@ -75,7 +75,6 @@ def run_gpg_verify(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             pass_fds=(status_fd_write,),
-            encoding='utf8',
         )
     except (FileNotFoundError, subprocess.SubprocessError) as err:
         raise AnsibleError(
@@ -83,6 +82,8 @@ def run_gpg_verify(
         ) from err
     else:
         stdout, stderr = p.communicate(input=signature)
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
     finally:
         os.close(status_fd_write)
 
