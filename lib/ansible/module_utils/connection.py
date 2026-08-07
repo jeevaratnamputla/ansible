@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import os
 import json
-import pickle
 import socket
 import struct
 import uuid
@@ -159,9 +158,7 @@ class Connection(object):
         if response['id'] != reqid:
             raise ConnectionError('invalid json-rpc id received')
         if "result_type" in response:
-            # NOTE: while pickle.loads is normally a concern, in this case it is controller code on the same
-            # machine and user in a private restricted path, any substitution would require same privs.
-            response["result"] = pickle.loads(to_bytes(response["result"], errors="surrogateescape"))
+            response["result"] = json.loads(response["result"])
 
         return response
 

@@ -154,11 +154,11 @@ def _run_module(jid, *module_args):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=False,
-            text=True,
-            encoding="utf-8",
         )
 
         (outdata, stderr) = script.communicate()
+        outdata = to_text(outdata, errors='surrogate_or_strict')
+        stderr = to_text(stderr, errors='surrogate_or_strict')
 
         (filtered_outdata, json_warnings) = _filter_non_json_lines(outdata)
 
