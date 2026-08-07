@@ -216,9 +216,9 @@ def daemonize(module, cmd):
         # even after fds close, we might want to wait for pid to die
         p.wait()
 
-        # Return JSON-encoded data to parent
-        return_data = json.dumps([p.returncode, to_text(output[p.stdout]), to_text(output[p.stderr])]).encode()
-        os.write(pipe[1], return_data)
+        # Return a JSON-serialized data of parent
+        return_data = json.dumps([p.returncode, to_text(output[p.stdout]), to_text(output[p.stderr])])
+        os.write(pipe[1], to_bytes(return_data, errors=errors))
 
         # clean up
         os.close(pipe[1])
@@ -242,7 +242,7 @@ def daemonize(module, cmd):
                     break
                 return_data += to_bytes(data, errors=errors)
 
-        return json.loads(return_data)
+        return json.loads(to_text(return_data, errors=errors))
 
 
 def check_ps(module, pattern):
