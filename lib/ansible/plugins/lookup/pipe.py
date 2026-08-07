@@ -43,6 +43,7 @@ RETURN = r"""
     elements: str
 """
 
+import shlex
 import subprocess
 
 from ansible.errors import AnsibleError
@@ -64,7 +65,7 @@ class LookupModule(LookupBase):
             # https://github.com/ansible/ansible/issues/6550
             term = str(term)
 
-            p = subprocess.Popen(term, cwd=self._templar.basedir, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            p = subprocess.Popen(shlex.split(term), cwd=self._templar.basedir, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             (stdout, stderr) = p.communicate()
             if p.returncode == 0:
                 ret.append(stdout.decode("utf-8").rstrip())
