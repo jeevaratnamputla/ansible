@@ -159,8 +159,14 @@ class LookupModule(LookupBase):
 
         dummy, start, end, dummy, stride, dummy, format = match.groups()
 
+        parsed = {
+            'start': start,
+            'end': end,
+            'stride': stride,
+            'format': format,
+        }
         for key in FIELDS:
-            value = locals().get(key, None)
+            value = parsed.get(key, None)
             if value is not None:
                 self.set_option(key, value)
 
