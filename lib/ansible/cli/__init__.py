@@ -78,6 +78,7 @@ initialize_locale()
 
 
 import getpass
+import shlex
 import subprocess
 import traceback
 from abc import ABC, abstractmethod
@@ -511,7 +512,7 @@ class CLI(ABC):
             else:
                 CLI.pager_pipe(text)
         else:
-            p = subprocess.Popen('less --version', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p = subprocess.Popen(['less', '--version'], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             p.communicate()
             if p.returncode == 0:
                 CLI.pager_pipe(text, pager='less')
@@ -526,7 +527,7 @@ class CLI(ABC):
         if 'less' in pager_cmd:
             os.environ['LESS'] = CLI.LESS_OPTS
         try:
-            cmd = subprocess.Popen(pager_cmd, shell=True, stdin=subprocess.PIPE, stdout=sys.stdout)
+            cmd = subprocess.Popen(shlex.split(pager_cmd), shell=False, stdin=subprocess.PIPE, stdout=sys.stdout)
             cmd.communicate(input=to_bytes(text))
         except (OSError, KeyboardInterrupt):
             pass
