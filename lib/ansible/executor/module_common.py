@@ -26,7 +26,6 @@ import importlib.util as _importlib_util
 import json
 import os
 import pathlib
-import pickle
 import shlex
 import zipfile
 import re
@@ -1149,25 +1148,40 @@ class _BuiltModule:
 class _CachedModule:
     """Cached Python module created by AnsiballZ."""
 
-    # FIXME: switch this to use a locked down pickle config or don't use pickle- easy to mess up and reach objects that shouldn't be pickled
-
     zip_data: bytes
     metadata: ModuleMetadata
     source_mapping: dict[str, str]
     """A mapping of controller absolute source locations to target relative source locations within the AnsiballZ payload."""
 
     def dump(self, path: str) -> None:
+        # Determine the metadata version key for round-trip reconstruction.
+        metadata_version = next(
+            (v for v, cls in metadata_versions.items() if type(self.metadata) is cls),
+            None,
+        )
+        payload = {
+            'zip_data': base64.b64encode(self.zip_data).decode('ascii'),
+            'metadata': {
+                'version': metadata_version,
+                'fields': dataclasses.asdict(self.metadata),
+            },
+            'source_mapping': self.source_mapping,
+        }
         temp_path = pathlib.Path(path + '-part')
-
-        with temp_path.open('wb') as cache_file:
-            pickle.dump(self, cache_file)
-
+        with temp_path.open('w', encoding='utf-8') as cache_file:
+            json.dump(payload, cache_file)
         temp_path.rename(path)
 
     @classmethod
     def load(cls, path: str) -> t.Self:
-        with pathlib.Path(path).open('rb') as cache_file:
-            return pickle.load(cache_file)
+        with pathlib.Path(path).open('r', encoding='utf-8') as cache_file:
+            payload = json.load(cache_file)
+        zip_data = base64.b64decode(payload['zip_data'])
+        meta_block = payload['metadata']
+        meta_cls = metadata_versions[meta_block['version']]
+        metadata = meta_cls(**meta_block['fields'])
+        source_mapping: dict[str, str] = payload['source_mapping']
+        return cls(zip_data=zip_data, metadata=metadata, source_mapping=source_mapping)
 
 
 def _find_module_utils(
