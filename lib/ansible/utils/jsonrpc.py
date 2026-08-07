@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import pickle
 import traceback
 
 from ansible.module_utils._internal import _no_six
@@ -83,9 +82,9 @@ class JsonRpcServer(object):
         if isinstance(result, bytes):
             result = to_text(result)
         if not isinstance(result, str):
-            response["result_type"] = "pickle"
-            # typically consumed in a module context; transform custom types (e.g. tagged/vaulted values) to native to prevent unpickling failures
-            result = to_text(pickle.dumps(transform_to_native_types(result, redact=False)))
+            response["result_type"] = "json"
+            # typically consumed in a module context; transform custom types (e.g. tagged/vaulted values) to native before JSON serialization
+            result = json.dumps(transform_to_native_types(result, redact=False))
         response['result'] = result
         return response
 
