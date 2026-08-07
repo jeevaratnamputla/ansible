@@ -49,6 +49,7 @@ RETURN = """
     elements: str
 """
 
+import shlex
 import subprocess
 from ansible.errors import AnsibleError
 from ansible.plugins.lookup import LookupBase
@@ -61,7 +62,7 @@ class LookupModule(LookupBase):
 
         ret = []
         for term in terms:
-            p = subprocess.Popen(term, cwd=self._loader.get_basedir(), shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            p = subprocess.Popen(shlex.split(term), cwd=self._loader.get_basedir(), shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             (stdout, stderr) = p.communicate()
             if p.returncode == 0:
                 ret.extend([to_text(l) for l in stdout.splitlines()])
