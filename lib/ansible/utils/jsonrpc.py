@@ -83,7 +83,7 @@ class JsonRpcServer(object):
             result = to_text(result)
         if not isinstance(result, str):
             response["result_type"] = "json"
-            # typically consumed in a module context; transform custom types (e.g. tagged/vaulted values) to native before JSON serialization
+            # typically consumed in a module context; transform custom types (e.g. tagged/vaulted values) to native to prevent JSON serialization failures
             result = json.dumps(transform_to_native_types(result, redact=False))
         response['result'] = result
         return response
