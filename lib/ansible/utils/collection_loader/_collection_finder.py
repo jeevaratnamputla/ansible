@@ -19,7 +19,7 @@ from importlib import import_module, reload as reload_module
 from importlib.machinery import FileFinder
 from importlib.util import find_spec, spec_from_loader
 from keyword import iskeyword
-from types import ModuleType
+from types import CodeType, ModuleType
 
 # DO NOT add new non-stdlib import deps here, this loader is used by external tools (eg ansible-test import sanity)
 # that only allow stdlib and module_utils
@@ -539,6 +539,8 @@ class _AnsibleCollectionPkgLoaderBase:
         # execute the module's code in its namespace
         code_obj = self.get_code(self._fullname)
         if code_obj is not None:  # things like NS packages that can't have code on disk will return None
+            if not isinstance(code_obj, CodeType):
+                raise TypeError('expected a compiled code object, got {0}'.format(type(code_obj)))
             exec(code_obj, module.__dict__)
 
     def create_module(self, spec):
@@ -570,6 +572,8 @@ class _AnsibleCollectionPkgLoaderBase:
             # execute the module's code in its namespace
             code_obj = self.get_code(fullname)
             if code_obj is not None:  # things like NS packages that can't have code on disk will return None
+                if not isinstance(code_obj, CodeType):
+                    raise TypeError('expected a compiled code object, got {0}'.format(type(code_obj)))
                 exec(code_obj, module.__dict__)
 
             return module
