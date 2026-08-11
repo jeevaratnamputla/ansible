@@ -196,6 +196,10 @@ def populate_integration_targets():
 
 _SAFE_IDENTIFIER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
 
+# Allowlist of the five SQLite type affinity names that this codebase uses.
+# Validated before being interpolated into DDL statements.
+_SAFE_COLUMN_TYPES = frozenset({'TEXT', 'REAL', 'INTEGER', 'BLOB', 'NUMERIC'})
+
 
 def _safe_identifier(name):
     """Validate that a SQL identifier contains only safe characters to prevent SQL injection."""
@@ -204,9 +208,21 @@ def _safe_identifier(name):
     return name
 
 
+def _safe_column_type(col_type):
+    """Validate that a SQL column type is a known-safe SQLite affinity keyword."""
+    if col_type not in _SAFE_COLUMN_TYPES:
+        raise ValueError("Unsafe SQL column type rejected: %r" % col_type)
+    return col_type
+
+
 def create_table(cursor, name, columns):
     safe_name = _safe_identifier(name)
-    safe_columns = [(_safe_identifier(col), col_type) for col, col_type in columns]
+    # Both the column name and its type are validated against strict allowlists
+    # before being composed into the DDL string.  SQLite does not support
+    # parameterised bindings for identifiers or type keywords, so allowlist
+    # validation is the correct mitigation here (prepared-statement bindings
+    # are used for row values in populate_table).
+    safe_columns = [(_safe_identifier(col), _safe_column_type(col_type)) for col, col_type in columns]
     schema = ', '.join('%s %s' % column for column in safe_columns)
 
     cursor.execute('DROP TABLE IF EXISTS %s' % safe_name)
