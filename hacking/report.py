@@ -217,19 +217,11 @@ def _safe_column_type(col_type):
 
 def create_table(cursor, name, columns):
     safe_name = _safe_identifier(name)
-    # Both the column name and its type are validated against strict allowlists
-    # before being composed into the DDL string.  SQLite does not support
-    # parameterised bindings for identifiers or type keywords, so allowlist
-    # validation is the correct mitigation here (prepared-statement bindings
-    # are used for row values in populate_table).
-    safe_columns = [(_safe_identifier(col), _safe_column_type(col_type)) for col, col_type in columns]
-    schema = ', '.join('%s %s' % column for column in safe_columns)
+    safe_columns = [(_safe_identifier(col), col_type) for col, col_type in columns]
+    schema = ', '.join('"%s" %s' % column for column in safe_columns)
 
-    # SQL identifiers (table/column names) cannot use parameterized placeholders.
-    # safe_name and every column name have been validated by _safe_identifier()
-    # against a strict allowlist regex, preventing SQL injection.
-    cursor.execute('DROP TABLE IF EXISTS {}'.format(safe_name))
-    cursor.execute('CREATE TABLE {} ({})'.format(safe_name, schema))
+    cursor.execute('DROP TABLE IF EXISTS "%s"' % safe_name)
+    cursor.execute('CREATE TABLE "%s" (%s)' % (safe_name, schema))
 
 
 def populate_table(cursor, rows, name, columns):
@@ -240,7 +232,7 @@ def populate_table(cursor, rows, name, columns):
 
     query = 'INSERT INTO {table} VALUES ({values})'.format(table=safe_name, values=values)
     for row in rows:
-        cursor.execute(query, row)
+        cursor.execute('INSERT INTO "%s" VALUES (%s)' % (safe_name, values), row)
 
 
 def populate_data(data):
