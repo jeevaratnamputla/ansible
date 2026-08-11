@@ -238,10 +238,9 @@ def populate_table(cursor, rows, name, columns):
     safe_name = _safe_identifier(name)
     values = ', '.join([':%s' % _safe_identifier(column[0]) for column in columns])
 
+    query = 'INSERT INTO {table} VALUES ({values})'.format(table=safe_name, values=values)
     for row in rows:
-        # safe_name is validated by _safe_identifier(); row values are passed as
-        # named parameters via sqlite3's parameterization, preventing SQL injection.
-        cursor.execute('INSERT INTO {} VALUES ({})'.format(safe_name, values), row)
+        cursor.execute(query, row)
 
 
 def populate_data(data):
