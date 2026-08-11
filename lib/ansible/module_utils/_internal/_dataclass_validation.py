@@ -171,7 +171,7 @@ def inject_post_init_validation(cls: type, allow_subclasses=False) -> None:
 
     code = compile(source, filename, 'exec')
 
-    exec(code, exec_globals, {})  # nosec - source is internally generated from type hints, not external input
+    exec(code, exec_globals, {})  # nosec # nosemgrep: exec-detected - source is internally generated from type hints, not external input
     setattr(cls, method_name, exec_globals[method_name])
 
 
