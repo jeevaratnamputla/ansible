@@ -34,7 +34,7 @@ import types
 import typing as t
 
 from ast import Assign, Constant, Import, ImportFrom, Name, Call, Attribute
-from importlib.resources import files as ir_files
+from importlib_resources import files as ir_files
 from io import BytesIO
 
 from ansible._internal import _locking
