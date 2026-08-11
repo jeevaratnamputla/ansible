@@ -196,12 +196,23 @@ def populate_integration_targets():
 
 _SAFE_IDENTIFIER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
 
+# Allowlist of the five SQLite type affinity names that this codebase uses.
+# Validated before being interpolated into DDL statements.
+_SAFE_COLUMN_TYPES = frozenset({'TEXT', 'REAL', 'INTEGER', 'BLOB', 'NUMERIC'})
+
 
 def _safe_identifier(name):
     """Validate that a SQL identifier contains only safe characters to prevent SQL injection."""
     if not _SAFE_IDENTIFIER_RE.match(name):
         raise ValueError("Unsafe SQL identifier rejected: %r" % name)
     return name
+
+
+def _safe_column_type(col_type):
+    """Validate that a SQL column type is a known-safe SQLite affinity keyword."""
+    if col_type not in _SAFE_COLUMN_TYPES:
+        raise ValueError("Unsafe SQL column type rejected: %r" % col_type)
+    return col_type
 
 
 def create_table(cursor, name, columns):
