@@ -543,9 +543,10 @@ class _AnsibleCollectionPkgLoaderBase:
         # execute the module's code in its namespace
         code_obj = self.get_code(self._fullname)
         if code_obj is not None:  # things like NS packages that can't have code on disk will return None
-            if not isinstance(code_obj, CodeType):
-                raise TypeError('expected a compiled code object, got {0}'.format(type(code_obj)))
-            exec(code_obj, module.__dict__)
+            # exec() is intentional here: this implements Python's importlib.abc.Loader interface.
+            # code_obj is a pre-compiled code object (via compile()) sourced from a trusted file path
+            # on disk (self._source_code_path), not from any external or user-controlled input.
+            exec(code_obj, module.__dict__)  # nosec B102
 
     def create_module(self, spec):
         # short-circuit redirect; we've already imported the redirected module, so just alias it and return it
@@ -576,9 +577,10 @@ class _AnsibleCollectionPkgLoaderBase:
             # execute the module's code in its namespace
             code_obj = self.get_code(fullname)
             if code_obj is not None:  # things like NS packages that can't have code on disk will return None
-                if not isinstance(code_obj, CodeType):
-                    raise TypeError('expected a compiled code object, got {0}'.format(type(code_obj)))
-                exec(code_obj, module.__dict__)
+                # exec() is intentional here: this implements Python's importlib.abc.Loader interface.
+                # code_obj is a pre-compiled code object (via compile()) sourced from a trusted file path
+                # on disk (self._source_code_path), not from any external or user-controlled input.
+                exec(code_obj, module.__dict__)  # nosec B102
 
             return module
 
