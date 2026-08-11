@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import contextlib as _contextlib
 import dataclasses as _dataclasses
-from importlib import resources as _importlib_resources, util as _importlib_util
+import importlib_resources as _importlib_resources
+from importlib import util as _importlib_util
 import inspect as _inspect
 import pathlib as _pathlib
 import typing as _t
