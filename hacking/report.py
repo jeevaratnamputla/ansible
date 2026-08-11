@@ -230,6 +230,7 @@ def populate_table(cursor, rows, name, columns):
     safe_name = _safe_identifier(name)
     values = ', '.join([':%s' % _safe_identifier(column[0]) for column in columns])
 
+    query = 'INSERT INTO {table} VALUES ({values})'.format(table=safe_name, values=values)
     for row in rows:
         cursor.execute('INSERT INTO "%s" VALUES (%s)' % (safe_name, values), row)
 
