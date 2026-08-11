@@ -30,7 +30,10 @@ from dataclasses import dataclass
 from hashlib import sha256
 from io import BytesIO
 from importlib.metadata import distribution
-from importlib.resources import files
+try:
+    from importlib.resources import files
+except ImportError:
+    from importlib_resources import files  # type: ignore[no-redef]
 from itertools import chain
 from operator import itemgetter
 
