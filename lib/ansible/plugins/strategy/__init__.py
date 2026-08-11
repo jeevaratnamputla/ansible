@@ -1145,7 +1145,16 @@ class Debugger(cmd.Cmd):
     def execute(self, args):
         try:
             code = compile(args + '\n', '<stdin>', 'single')
-            exec(code, globals(), self.scope)
+            safe_globals = {'__builtins__': {
+                'True': True, 'False': False, 'None': None,
+                'print': print, 'repr': repr, 'len': len,
+                'list': list, 'dict': dict, 'tuple': tuple, 'set': set,
+                'str': str, 'int': int, 'float': float, 'bool': bool,
+                'sorted': sorted, 'enumerate': enumerate, 'zip': zip,
+                'range': range, 'isinstance': isinstance, 'type': type,
+                'hasattr': hasattr, 'getattr': getattr,
+            }}
+            exec(code, safe_globals, self.scope)
         except Exception:
             t, v = sys.exc_info()[:2]
             if isinstance(t, str):
