@@ -32,11 +32,15 @@ try:
     # older Python versions.
     from importlib.resources.abc import TraversableResources  # type: ignore[import]
 except ImportError:
-    # Used with Python 3.9 and 3.10 only
-    # This member is still available as an alias up until Python 3.14 but
-    # is deprecated as of Python 3.12.
-    # deprecated: description='TraversableResources move' python_version='3.10'
-    from importlib.abc import TraversableResources  # type: ignore[assignment,no-redef]
+    try:
+        # Used with Python 3.9 and 3.10 only
+        # This member is still available as an alias up until Python 3.14 but
+        # is deprecated as of Python 3.12.
+        # deprecated: description='TraversableResources move' python_version='3.10'
+        from importlib.abc import TraversableResources  # type: ignore[assignment,no-redef]
+    except ImportError:
+        # Fallback for Python < 3.9: use the importlib_resources backport package
+        from importlib_resources.abc import TraversableResources  # type: ignore[assignment,no-redef]
 
 # NB: this supports import sanity test providing a different impl
 try:
