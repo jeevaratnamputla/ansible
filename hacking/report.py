@@ -207,10 +207,10 @@ def _safe_identifier(name):
 def create_table(cursor, name, columns):
     safe_name = _safe_identifier(name)
     safe_columns = [(_safe_identifier(col), col_type) for col, col_type in columns]
-    schema = ', '.join('%s %s' % column for column in safe_columns)
+    schema = ', '.join('"%s" %s' % column for column in safe_columns)
 
-    cursor.execute('DROP TABLE IF EXISTS %s' % safe_name)
-    cursor.execute('CREATE TABLE %s (%s)' % (safe_name, schema))
+    cursor.execute('DROP TABLE IF EXISTS "%s"' % safe_name)
+    cursor.execute('CREATE TABLE "%s" (%s)' % (safe_name, schema))
 
 
 def populate_table(cursor, rows, name, columns):
@@ -220,7 +220,7 @@ def populate_table(cursor, rows, name, columns):
     values = ', '.join([':%s' % _safe_identifier(column[0]) for column in columns])
 
     for row in rows:
-        cursor.execute('INSERT INTO %s VALUES (%s)' % (safe_name, values), row)
+        cursor.execute('INSERT INTO "%s" VALUES (%s)' % (safe_name, values), row)
 
 
 def populate_data(data):
