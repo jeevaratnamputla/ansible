@@ -217,11 +217,13 @@ def _safe_column_type(col_type):
 
 def create_table(cursor, name, columns):
     safe_name = _safe_identifier(name)
-    safe_columns = [(_safe_identifier(col), col_type) for col, col_type in columns]
+    safe_columns = [(_safe_identifier(col), _safe_column_type(col_type)) for col, col_type in columns]
     schema = ', '.join('"%s" %s' % column for column in safe_columns)
 
-    cursor.execute('DROP TABLE IF EXISTS "%s"' % safe_name)
-    cursor.execute('CREATE TABLE "%s" (%s)' % (safe_name, schema))
+    drop_sql = 'DROP TABLE IF EXISTS "%s"' % safe_name
+    cursor.execute(drop_sql)
+    create_sql = 'CREATE TABLE "%s" (%s)' % (safe_name, schema)
+    cursor.execute(create_sql)
 
 
 def populate_table(cursor, rows, name, columns):
@@ -230,9 +232,9 @@ def populate_table(cursor, rows, name, columns):
     safe_name = _safe_identifier(name)
     values = ', '.join([':%s' % _safe_identifier(column[0]) for column in columns])
 
-    query = 'INSERT INTO {table} VALUES ({values})'.format(table=safe_name, values=values)
+    insert_sql = 'INSERT INTO "%s" VALUES (%s)' % (safe_name, values)
     for row in rows:
-        cursor.execute('INSERT INTO "%s" VALUES (%s)' % (safe_name, values), row)
+        cursor.execute(insert_sql, row)
 
 
 def populate_data(data):
